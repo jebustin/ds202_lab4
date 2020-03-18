@@ -28,3 +28,28 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+library(readxl)
+library(dplyr)
+library(tidyverse)
+defense <- read_excel('cyclonesFootball2019.xlsx', sheet='Defensive')
+offense <- read_excel('cyclonesFootball2019.xlsx', sheet='Offensive')
+bio <- read_excel('cyclonesFootball2019.xlsx', sheet='Biography')
+offense$Name = as.factor(offense$Name)
+offense$Opponent_Opponent = as.factor(offense$Opponent_Opponent)
+defense$Name = as.factor(defense$Name)
+defense$Opponent_Opponent = as.factor(defense$Opponent_Opponent)
+bio$Name = as.factor(bio$Name)
+defClean = defense %>%
+  mutate_if(is.character, as.numeric)
+offClean = offense %>%
+  mutate_if(is.character, as.numeric)
+bio = bio %>% 
+  mutate(Height = str_replace(Height, "-", ".")) %>%
+  mutate_at("Height", as.numeric)
+bioClean = bio %>%
+  mutate_at("Weight", as.numeric)
+defClean
+offClean
+bioClean
+```
