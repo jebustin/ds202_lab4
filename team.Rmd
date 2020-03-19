@@ -5,6 +5,10 @@ date: "3/11/2020"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ```{r}
 library(readxl)
 library(dplyr)
@@ -14,15 +18,30 @@ library(ggplot2)
 defense <- read_excel('cyclonesFootball2019.xlsx', sheet='Defensive')
 offense <- read_excel('cyclonesFootball2019.xlsx', sheet='Offensive')
 bio <- read_excel('cyclonesFootball2019.xlsx', sheet='Biography')
+```
+
+### Part One
+### 1.
+```{r}
 offense$Name = as.factor(offense$Name)
 offense$Opponent_Opponent = as.factor(offense$Opponent_Opponent)
 defense$Name = as.factor(defense$Name)
 defense$Opponent_Opponent = as.factor(defense$Opponent_Opponent)
 bio$Name = as.factor(bio$Name)
+```
+
+### 2.
+```{r}
 defClean = defense %>%
   mutate_if(is.character, as.numeric)
 offClean = offense %>%
   mutate_if(is.character, as.numeric)
+bioClean = bio %>%
+  mutate_at("Weight", as.numeric)
+```
+
+### 3.
+```{r}
 bio <- bio %>%
   separate('Height', c("Feet", "Inches"), 
            sep = "-(?=[^ ]+$)", remove = FALSE) %>%
@@ -32,14 +51,16 @@ bio <- bio %>%
 bio$Height <- bio$Feet * 12 + bio$Inches
 
 bio <- bio %>% select(-Feet, -Inches)
-
-bioClean = bio %>%
-  mutate_at("Weight", as.numeric)
-defClean
-offClean
-bioClean
 ```
 
+```{r}
+str(defClean)
+str(offClean)
+str(bioClean)
+```
+
+### Part Two(1)
+### 1.
 ```{r}
 defCleanTidy <- defClean %>% 
   pivot_longer(Tackles_Solo:Pass_PB, names_to = 'Statistic',
@@ -47,6 +68,7 @@ defCleanTidy <- defClean %>%
 head(defCleanTidy)
 ```
 
+### 2.
 ```{r}
 defCleanTidy %>% 
   ggplot(aes(x = defCleanTidy$Value)) +
@@ -55,6 +77,7 @@ defCleanTidy %>%
   ggtitle("Distributions of Defensive Statistics")
 ```
 
+### 3.
 ```{r}
 WVandKS <- defCleanTidy %>% 
   filter(Statistic == 'Tackles_Solo') %>% 
@@ -68,6 +91,8 @@ ggplot(data = WVandKS, aes(x = WVandKS$'West Virginia', y = WVandKS$'Kansas Stat
   ggtitle("Solo Tackles")
 ```
 
+Iowa State had better defense against Kansas State than they did agaisnt West Virginia in 2019 based on the number of solo tackles.  The above graph helps to show this because there are more points higher on the y axis than there are higher on the x axis.  Let's verify this numerically:
+
 ```{r}
 defCleanTidy %>% 
   filter(Statistic == 'Tackles_Solo') %>% 
@@ -77,6 +102,11 @@ defCleanTidy %>%
   summarize(Total = sum(Value))
 ```
 
+Our numerical analysis agrees.
+
+
+### Part Two(2)
+### 1.
 ```{r}
 bioCleanTidy <- bioClean %>%
   separate('Hometown', c("Home_City", "Home_State"), 
@@ -85,6 +115,7 @@ bioCleanTidy <- bioClean %>%
 bioCleanTidy %>% head(3)
 ```
 
+### 2.
 ```{r}
 bioCleanTidy %>%
   group_by(Home_State) %>%
