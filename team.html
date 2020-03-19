@@ -403,9 +403,16 @@ defClean = defense %&gt;%
 offClean = offense %&gt;%
   mutate_if(is.character, as.numeric)</code></pre>
 <pre><code>## Warning: NAs introduced by coercion</code></pre>
-<pre class="r"><code>bio = bio %&gt;% 
-  mutate(Height = str_replace(Height, &quot;-&quot;, &quot;.&quot;)) %&gt;%
-  mutate_at(&quot;Height&quot;, as.numeric)
+<pre class="r"><code>bio &lt;- bio %&gt;%
+  separate(&#39;Height&#39;, c(&quot;Feet&quot;, &quot;Inches&quot;), 
+           sep = &quot;-(?=[^ ]+$)&quot;, remove = FALSE) %&gt;%
+  mutate_at(&quot;Feet&quot;, as.numeric) %&gt;%
+  mutate_at(&quot;Inches&quot;, as.numeric)
+
+bio$Height &lt;- bio$Feet * 12 + bio$Inches
+
+bio &lt;- bio %&gt;% select(-Feet, -Inches)
+
 bioClean = bio %&gt;%
   mutate_at(&quot;Weight&quot;, as.numeric)
 defClean</code></pre>
@@ -445,19 +452,20 @@ defClean</code></pre>
 <pre><code>## # A tibble: 105 x 7
 ##    Name         Position     Height Weight Class       Hometown       Highschool
 ##    &lt;fct&gt;        &lt;chr&gt;         &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;          &lt;chr&gt;     
-##  1 Akers, Land~ Wide Receiv~    6      188 Redshirt S~ Cedar Rapids,~ Washington
-##  2 Allen, Chase Tight End       6.7    245 Redshirt S~ Nixa, Mo.      Nixa      
-##  3 Anderson, E~ Wide Receiv~    6.5    204 Redshirt F~ Seffner, Fla.  Armwood   
-##  4 Assalley, C~ Placekicker     6      195 Redshirt S~ Naperville, I~ Central   
-##  5 Azunna, Arn~ Defensive B~    6      190 Redshirt S~ Grand Prairie~ Lake Ridge
-##  6 Bailey, Cor~ Defensive E~    6.3    235 Redshirt J~ Clarksdale, M~ Clarksdale
-##  7 Bailey, JaQ~ Defensive E~    6.2    255 Redshirt S~ Jacksonville,~ Raines    
-##  8 Bailey, Jos~ Defensive L~    6.2    285 Redshirt S~ Jacksonville,~ Raines    
-##  9 Bankston, L~ Defensive L~    6      300 Junior      Woodstock, Ga. Woodstock 
-## 10 Bouman, Aid~ Quarterback     6.6    215 Freshman    Buffalo, Minn. Buffalo   
+##  1 Akers, Land~ Wide Receiv~     72    188 Redshirt S~ Cedar Rapids,~ Washington
+##  2 Allen, Chase Tight End        79    245 Redshirt S~ Nixa, Mo.      Nixa      
+##  3 Anderson, E~ Wide Receiv~     77    204 Redshirt F~ Seffner, Fla.  Armwood   
+##  4 Assalley, C~ Placekicker      72    195 Redshirt S~ Naperville, I~ Central   
+##  5 Azunna, Arn~ Defensive B~     72    190 Redshirt S~ Grand Prairie~ Lake Ridge
+##  6 Bailey, Cor~ Defensive E~     75    235 Redshirt J~ Clarksdale, M~ Clarksdale
+##  7 Bailey, JaQ~ Defensive E~     74    255 Redshirt S~ Jacksonville,~ Raines    
+##  8 Bailey, Jos~ Defensive L~     74    285 Redshirt S~ Jacksonville,~ Raines    
+##  9 Bankston, L~ Defensive L~     72    300 Junior      Woodstock, Ga. Woodstock 
+## 10 Bouman, Aid~ Quarterback      78    215 Freshman    Buffalo, Minn. Buffalo   
 ## # ... with 95 more rows</code></pre>
 <pre class="r"><code>defCleanTidy &lt;- defClean %&gt;% 
-  pivot_longer(Tackles_Solo:Pass_PB, names_to = &#39;Statistic&#39;, values_to=&#39;Value&#39;)
+  pivot_longer(Tackles_Solo:Pass_PB, names_to = &#39;Statistic&#39;,
+               values_to=&#39;Value&#39;)
 head(defCleanTidy)</code></pre>
 <pre><code>## # A tibble: 6 x 4
 ##   Name            Opponent_Opponent Statistic    Value
@@ -506,9 +514,9 @@ bioCleanTidy %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 x 8
 ##   Name       Position   Height Weight Class     Home_City  Home_State Highschool
 ##   &lt;fct&gt;      &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;     
-## 1 Akers, La~ Wide Rece~    6      188 Redshirt~ Cedar Rap~ Iowa       Washington
-## 2 Allen, Ch~ Tight End     6.7    245 Redshirt~ Nixa       Mo.        Nixa      
-## 3 Anderson,~ Wide Rece~    6.5    204 Redshirt~ Seffner    Fla.       Armwood</code></pre>
+## 1 Akers, La~ Wide Rece~     72    188 Redshirt~ Cedar Rap~ Iowa       Washington
+## 2 Allen, Ch~ Tight End      79    245 Redshirt~ Nixa       Mo.        Nixa      
+## 3 Anderson,~ Wide Rece~     77    204 Redshirt~ Seffner    Fla.       Armwood</code></pre>
 <pre class="r"><code>bioCleanTidy %&gt;%
   group_by(Home_State) %&gt;%
   summarize(Count = n())</code></pre>

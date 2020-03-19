@@ -23,9 +23,16 @@ defClean = defense %>%
   mutate_if(is.character, as.numeric)
 offClean = offense %>%
   mutate_if(is.character, as.numeric)
-bio = bio %>% 
-  mutate(Height = str_replace(Height, "-", ".")) %>%
-  mutate_at("Height", as.numeric)
+bio <- bio %>%
+  separate('Height', c("Feet", "Inches"), 
+           sep = "-(?=[^ ]+$)", remove = FALSE) %>%
+  mutate_at("Feet", as.numeric) %>%
+  mutate_at("Inches", as.numeric)
+
+bio$Height <- bio$Feet * 12 + bio$Inches
+
+bio <- bio %>% select(-Feet, -Inches)
+
 bioClean = bio %>%
   mutate_at("Weight", as.numeric)
 defClean
@@ -35,7 +42,8 @@ bioClean
 
 ```{r}
 defCleanTidy <- defClean %>% 
-  pivot_longer(Tackles_Solo:Pass_PB, names_to = 'Statistic', values_to='Value')
+  pivot_longer(Tackles_Solo:Pass_PB, names_to = 'Statistic',
+               values_to='Value')
 head(defCleanTidy)
 ```
 
