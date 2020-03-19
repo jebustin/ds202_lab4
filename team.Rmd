@@ -5,33 +5,12 @@ date: "3/11/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 ```{r}
 library(readxl)
 library(dplyr)
 library(tidyverse)
+library(tidyr)
+library(ggplot2)
 defense <- read_excel('cyclonesFootball2019.xlsx', sheet='Defensive')
 offense <- read_excel('cyclonesFootball2019.xlsx', sheet='Offensive')
 bio <- read_excel('cyclonesFootball2019.xlsx', sheet='Biography')
@@ -52,4 +31,54 @@ bioClean = bio %>%
 defClean
 offClean
 bioClean
+```
+
+```{r}
+defCleanTidy <- defClean %>% 
+  pivot_longer(Tackles_Solo:Pass_PB, names_to = 'Statistic', values_to='Value')
+head(defCleanTidy)
+```
+
+```{r}
+defCleanTidy %>% 
+  ggplot(aes(x = defCleanTidy$Value)) +
+  geom_histogram() + 
+  facet_wrap(~Statistic) + 
+  ggtitle("Distributions of Defensive Statistics")
+```
+
+```{r}
+WVandKS <- defCleanTidy %>% 
+  filter(Statistic == 'Tackles_Solo') %>% 
+  filter(Opponent_Opponent == 'West Virginia' | Opponent_Opponent ==
+         'Kansas State') %>%
+  pivot_wider(names_from='Opponent_Opponent', 
+              values_from='Value')
+
+ggplot(data = WVandKS, aes(x = WVandKS$'West Virginia', y = WVandKS$'Kansas State')) +
+  geom_point() +
+  ggtitle("Solo Tackles")
+```
+
+```{r}
+defCleanTidy %>% 
+  filter(Statistic == 'Tackles_Solo') %>% 
+  filter(Opponent_Opponent == 'West Virginia' | Opponent_Opponent ==
+         'Kansas State') %>%
+  group_by(Opponent_Opponent) %>%
+  summarize(Total = sum(Value))
+```
+
+```{r}
+bioCleanTidy <- bioClean %>%
+  separate('Hometown', c("Home_City", "Home_State"), 
+           sep = ", (?=[^ ]+$)")
+
+bioCleanTidy %>% head(3)
+```
+
+```{r}
+bioCleanTidy %>%
+  group_by(Home_State) %>%
+  summarize(Count = n())
 ```
