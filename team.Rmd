@@ -7,14 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 ```
 
 ```{r}
-library(readxl)
-library(dplyr)
-library(tidyverse)
-library(tidyr)
-library(ggplot2)
 defense <- read_excel('cyclonesFootball2019.xlsx', sheet='Defensive')
 offense <- read_excel('cyclonesFootball2019.xlsx', sheet='Offensive')
 bio <- read_excel('cyclonesFootball2019.xlsx', sheet='Biography')
@@ -74,8 +73,11 @@ defCleanTidy %>%
   ggplot(aes(x = defCleanTidy$Value)) +
   geom_histogram() + 
   facet_wrap(~Statistic) + 
-  ggtitle("Distributions of Defensive Statistics")
+  ggtitle("Distributions of Defensive Statistics") +
+  xlab("Number of Instances")
 ```
+
+According to the above graphs turnovers of all types are very rare and so are sacks.  This fits with general football knowledge.
 
 ### 3.
 ```{r}
@@ -120,4 +122,34 @@ bioCleanTidy %>% head(3)
 bioCleanTidy %>%
   group_by(Home_State) %>%
   summarize(Count = n())
+```
+
+The above table shows the number of players from each state.
+
+### Part Three
+### 1.
+```{r}
+offBioMerge <- left_join(offClean, bioCleanTidy, by = "Name")
+```
+
+### 2.
+```{r}
+offBioMerge %>% 
+  ggplot(aes(x = Weight, y = Receiving_YDS)) +
+  geom_point() +
+  ggtitle("Player Weight and Receving Yards") +
+  xlab("Weight") +
+  ylab("Game Yards")
+```
+
+There does appear to be a slight correlation between a players weight and their receiving yards.  This relationship is moderate negative and not linear.  There does seem to be a player that breaks with this trend as he is on the heavier end and still has higher receiving yards.  This analysis also fits with general knowledge, lighter players are faster and complete more receiving yards with some exceptions like some tight ends.
+
+### 3.
+```{r}
+
+```
+
+### 4.
+```{r}
+
 ```
