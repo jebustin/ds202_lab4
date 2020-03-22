@@ -158,7 +158,7 @@ bioCleanTidy$Iowan <- bioCleanTidy$Home_State == 'Iowa'
 
 offBioMerge <- right_join(offClean, bioCleanTidy, by = "Name")
 
-defBioMerge <- left_join(offClean, bioCleanTidy, by = "Name")
+defBioMerge <- right_join(defClean, bioCleanTidy, by = "Name")
 
 offBioMerge <- offBioMerge %>% 
   mutate(Rushing_YDS = replace_na(Rushing_YDS, 0)) %>%
@@ -170,12 +170,42 @@ offBioMerge <- offBioMerge %>%
 offBioMerge %>%
   group_by(Iowan, Name) %>%
   summarize(Total_YDS = sum(sum)) %>%
+  subset(Total_YDS != 0) %>%
   ggplot(aes(x = Iowan, y = Total_YDS)) +
-  geom_boxplot()
+  geom_boxplot() +
+  ggtitle("Offensive Yards By In or Out of State")
 
 offBioMerge %>%
+  subset(sum != 0) %>%
   group_by(Iowan) %>%
   summarize(Mean_Player_YDS = sum(sum) / n()) %>%
   print()
 
+offBioMerge %>%
+  subset(sum != 0 & Name != 'Purdy, Brock') %>%
+  group_by(Iowan) %>%
+  summarize(Mean_Player_YDS = sum(sum) / n(), count = n()) %>%
+  print()
+
 ```
+
+It was decided that if a player had 0 total offensive yards they would not be included as they were not playing or were not in a position that accumulates yardage.  In addition the the graphic representation we figured the average offensive yards per game for in state verses out of state players.  The out of state players perform much better.  To check to see how much the QB, Brock Purdy influenced this number we also removed him and found that out of state players still perform much better offensively.  
+
+```{r}
+defBioMerge %>%
+  group_by(Iowan, Name) %>%
+  subset(Tackles_Solo != 0) %>%
+  summarize(Total_Solo_Tackles = sum(Tackles_Solo)) %>%
+  ggplot(aes(x = Iowan, y = Total_Solo_Tackles)) +
+  geom_boxplot() +
+  ggtitle("Solo Tackles by in or Out of State")
+
+defBioMerge %>%
+  group_by(Iowan) %>%
+  subset(Tackles_Solo != 0) %>%
+  summarize(Mean_Player_Tackles = sum(Tackles_Solo, na.rm = TRUE) /
+              n(), count = n()) %>%
+  print()
+```
+
+It appears that out of state players are better on the defensive side of the ball as well but the difference is much closer than on offense.
