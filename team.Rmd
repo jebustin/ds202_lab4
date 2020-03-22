@@ -1,6 +1,6 @@
 ---
 title: "team.Rmd"
-author: 'Jessie Bustin Github: jebustin'
+author: 'Jessie Bustin Github: jebustin & Matt Coulibaly Github: MattCoulibaly'
 date: "3/11/2020"
 output: html_document
 ---
