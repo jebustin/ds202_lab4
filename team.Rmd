@@ -129,7 +129,7 @@ The above table shows the number of players from each state.
 ### Part Three
 ### 1.
 ```{r}
-offBioMerge <- left_join(offClean, bioCleanTidy, by = "Name")
+offBioMerge <- right_join(offClean, bioCleanTidy, by = "Name")
 ```
 
 ### 2.
@@ -142,7 +142,7 @@ offBioMerge %>%
   ylab("Game Yards")
 ```
 
-There does appear to be a slight correlation between a players weight and their receiving yards.  This relationship is moderate negative and not linear.  There does seem to be a player that breaks with this trend as he is on the heavier end and still has higher receiving yards.  This analysis also fits with general knowledge, lighter players are faster and complete more receiving yards with some exceptions like some tight ends.
+There does appear to be a slight correlation between a players weight and their receiving yards.  This relationship is moderate, negative, and not linear.  There does seem to be a player that breaks with this trend as he is on the heavier end and still has higher receiving yards.  This analysis also fits with general knowledge, lighter players are faster and complete more receiving yards with some exceptions like some tight ends.
 
 ### 3.
 ```{r}
@@ -150,6 +150,32 @@ There does appear to be a slight correlation between a players weight and their 
 ```
 
 ### 4.
+Do in state or out of state players perform better offensively?  Is the same true for the defense?
+
+To answer this question we will add a column to the bio data that is a boolean set to true if the player is from Iowa.  We will then merge offense with bio and defense with bio.  We will then compare offensive receiving yards for Iowa players vs out of state for the season and then total solo tackles for in and out of state players for the season.
 ```{r}
+bioCleanTidy$Iowan <- bioCleanTidy$Home_State == 'Iowa'
+
+offBioMerge <- right_join(offClean, bioCleanTidy, by = "Name")
+
+defBioMerge <- left_join(offClean, bioCleanTidy, by = "Name")
+
+offBioMerge <- offBioMerge %>% 
+  mutate(Rushing_YDS = replace_na(Rushing_YDS, 0)) %>%
+  mutate(Passing_YDS = replace_na(Passing_YDS, 0)) %>%
+  mutate(Receiving_YDS = replace_na(Receiving_YDS, 0)) %>%
+  select(Name, Iowan, Rushing_YDS, Passing_YDS, Receiving_YDS) %>%
+  mutate(sum = rowSums(.[3:5]))
+
+offBioMerge %>%
+  group_by(Iowan, Name) %>%
+  summarize(Total_YDS = sum(sum)) %>%
+  ggplot(aes(x = Iowan, y = Total_YDS)) +
+  geom_boxplot()
+
+offBioMerge %>%
+  group_by(Iowan) %>%
+  summarize(Mean_Player_YDS = sum(sum) / n()) %>%
+  print()
 
 ```
