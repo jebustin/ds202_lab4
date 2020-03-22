@@ -129,8 +129,15 @@ The above table shows the number of players from each state.
 ### Part Three
 ### 1.
 ```{r}
-offBioMerge <- right_join(offClean, bioCleanTidy, by = "Name")
+offBioMerge <- left_join(offClean, bioCleanTidy, by = "Name")
+
+offBioMerge %>%
+  group_by(Home_State, Home_State) %>%
+  summarize(Count = n())
+  
 ```
+
+It was decided that left_join should be used to add the bio info to the offClean data.  This means that there will be NA values for the offensive players that are not listed in bio.  The question asks where the offensive players are from so it would be incorrect to remove players just because the answer is unkown.  right_join could be used to look at only offensive players that we have bio info about.  The following plot will already remove NA values as well.
 
 ### 2.
 ```{r}
@@ -146,7 +153,7 @@ There does appear to be a slight correlation between a players weight and their 
 
 ### 3.
 
-To compare Purdy's performace to the overall teams performance we will plot Purdy's total yards compared to the team's total yards and Purdy's total yards and solo tackles.
+To compare Purdy's performace to the overall teams performance we will plot Purdy's total yards compared to the team's total offensive yards and Purdy's total yards and solo tackles for each game.
 
 ```{r}
 offCleanTidy <- offClean %>%
