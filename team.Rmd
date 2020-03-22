@@ -145,9 +145,46 @@ offBioMerge %>%
 There does appear to be a slight correlation between a players weight and their receiving yards.  This relationship is moderate, negative, and not linear.  There does seem to be a player that breaks with this trend as he is on the heavier end and still has higher receiving yards.  This analysis also fits with general knowledge, lighter players are faster and complete more receiving yards with some exceptions like some tight ends.
 
 ### 3.
-```{r}
 
+To compare Purdy's performace to the overall teams performance we will plot Purdy's total yards compared to the team's total yards and Purdy's total yards and solo tackles.
+
+```{r}
+offCleanTidy <- offClean %>%
+  pivot_longer(Rushing_ATT:Passing_INT, names_to = 'Off_Statistic',
+               values_to='Off_Value')
+
+team <- full_join(offCleanTidy, defCleanTidy) %>%
+  mutate_if(is.numeric, ~replace(., is.na(.), 0)) 
+
+team$Is_Purdy <- team$Name == 'Purdy, Brock'
+team$Is_Purdy <- factor(team$Is_Purdy, labels =  c("Other", "Purdy"))
+
+
+team <- team %>%
+  group_by(Opponent_Opponent, Is_Purdy) %>%
+  subset(Off_Statistic == 'Rushing_YDS' | Off_Statistic ==
+           'Receiving_YDS' | Off_Statistic == 'Passing_YDS' |
+           Statistic == 'Tackles_Solo') %>%
+  summarize(off_Yards = sum(Off_Value), def_Tackles = sum(Value)) %>%
+  pivot_wider(names_from=Is_Purdy, values_from='off_Yards') %>%
+  mutate_if(is.numeric, ~replace(., is.na(.), 0)) %>%
+  group_by(Opponent_Opponent) %>%
+  summarize(Purdy = sum(Purdy), Other = sum(Other), Tackles =
+             sum(def_Tackles))
+team %>%
+  ggplot(aes(x = Purdy, y = Other)) +
+  geom_point() +
+  ggtitle('Purdy Yardage Vs. Total Offensive Yardage')
+
+team %>%
+  ggplot(aes(x = Purdy, y = Tackles)) +
+  geom_point() +
+  ggtitle('Pudry Yardage Vs. Solo Tackles')
 ```
+
+There is a loose positive correlation between Brock Purdy's total yards and the rest of the team's offensive yards.  This was a surprise as his passing yards will always require another player to accumulate receiving yards which would indicate that the relationship might have been stronger than it appears to be.  This can be explained by the running backs though, as when Purdy throws a lot the RBs would see fewer touchs and vice versa.
+
+As far as defensively there also appears to be a positive relationship between Purdy's total yards and total solo tackles.  This relationship might even be stronger than the offensive one.  Further analysis of regression and R squared would be needed to confirm.  This correlation might be due to momentum in a game, or just the overall talent of the opponent.  
 
 ### 4.
 Do in state or out of state players perform better offensively?  Is the same true for the defense?
